@@ -1,0 +1,115 @@
+require(dplyr)
+
+filename <- "C:\\Users\\joshuatan\\Documents\\Training\\Data Science Core Competency Training\\Core 002 - 20170904\\Week 1\\DSCT-Intro-To-R-master\\35478-0001-Data.csv"
+wk <- read.csv(filename, header=TRUE) #4820 X 1069
+rm(filename)
+
+subsetwk = select(wk,AGE, DEGREE, EDUC, HAPPY, HOMPOP, INCOME, MARITAL, RACE, RINCOME, SEX )
+rm(wk)
+
+#Question 1
+Question1 = as.numeric(count(subsetwk))
+#4820
+
+#Question 2
+#AGE: 98,99
+#DEGREE: 7,8,9
+#EDUC: 97,98,99
+#HAPPY: 0,8,9
+#HOMEPOP: 98,99
+#INCOME: 0,13,98,99
+#MARTIAL: 9
+#RACE: 0
+#RINCOME: 0,13,98,99
+#SEX: 
+
+#Question 3
+cleandt = subset(subsetwk, AGE<98 & 
+         DEGREE < 7 & 
+         EDUC < 97 & 
+         HAPPY > 0 &
+         HAPPY < 8 &
+         HOMPOP < 98 & 
+         INCOME > 0 &
+         INCOME < 13 &
+         MARITAL != 9 &
+         RACE != 0 &
+         RINCOME > 0 &
+         RINCOME < 13)
+rm(subsetwk)
+Question3 = as.numeric(count(cleandt))
+#2749
+
+#Question 4
+Question4 = cleandt
+Question4$INCOME[Question4$INCOME==1] = 0
+Question4$INCOME[Question4$INCOME==2] = 1000
+Question4$INCOME[Question4$INCOME==3] = 2000
+Question4$INCOME[Question4$INCOME==4] = 3000
+Question4$INCOME[Question4$INCOME==5] = 4000
+Question4$INCOME[Question4$INCOME==6] = 5000
+Question4$INCOME[Question4$INCOME==7] = 6000
+Question4$INCOME[Question4$INCOME==8] = 7000
+Question4$INCOME[Question4$INCOME==9] = 10000
+Question4$INCOME[Question4$INCOME==10] = 15000
+Question4$INCOME[Question4$INCOME==11] = 20000
+Question4$INCOME[Question4$INCOME==12] = 25000
+Question4$PERCAPITA = Question4$INCOME/Question4$HOMPOP
+
+#Question 5
+Question5 = summary(Question4$PERCAPITA)
+#Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#0    6250    8333   10945   12500   25000 
+
+#Question 6
+Deg = length(cleandt$DEGREE[cleandt$DEGREE>=3])
+Question6 = Deg/Question3l
+rm(Deg)
+#0.3528556
+
+#Question 7
+Question7 = cleandt
+Question7$AGE[cleandt$AGE <= 35 & cleandt$AGE >= 18] = "Young"
+Question7$AGE[cleandt$AGE <= 55 & cleandt$AGE >= 36] = "Middle"
+Question7$AGE[cleandt$AGE >= 56] = "Old"
+
+#Question 8
+ftable(Question7$HAPPY,Question7$AGE)
+prop.table(ftable(Question7$HAPPY,Question7$AGE))
+#    Middle        Old      Young
+#1  0.13095671 0.07311750 0.09348854
+#2  0.28192070 0.13677701 0.17751910
+#3  0.05456530 0.02364496 0.02801019
+#No, The proportion of Middle age who registered a 1 and 2 for happiness are higher than the number of those of young age.
+
+
+#Question 9
+require(ggplot2)
+#summary(cleandt$RINCOME)
+#summary(cleandt$EDUC)
+Question9 = ggplot(cleandt,aes(x=RINCOME,y=EDUC)) + geom_count()+ geom_smooth(method = "lm")
+Question9
+#Yes there is a upward trend showing people with higher years of studies do earn more income in general.
+
+#Question 10
+Question10Table = cleandt
+Question10Table$RACE[cleandt$RACE == 1] = "White"
+Question10Table$RACE[cleandt$RACE == 2] = "Black"
+Question10Table$RACE[cleandt$RACE == 3] = "Other"
+Question10 = ggplot(Question10Table,aes(x=RACE,y=RINCOME)) + geom_count()
+
+Question10
+boxplot(Question10Table$RINCOME ~ Question10Table$RACE, main="Boxplot of Income against Race")
+
+#Respondents of White Race tend to have a higher income.
+
+#Question 10 Wworking
+tmp = prop.table(ftable(Question10Table$RINCOME,Question10Table$RACE))
+tmp = data.frame(prop.table(ftable(Question10Table$RINCOME,Question10Table$RACE)))
+prop.table(Question10Table$RINCOME)
+tmp[tmp$Var1==RINCOME&&tmp$Var2==RACE]
+count(Question10Table[Question10Table$RINCOME==12&Question10Table$RACE=="Black",])/count(Question10Table[Question10Table$RACE=="Black",])
+ggplot(Question10Table,aes(fill = RINCOME, y=count(Question10Table[Question10Table$RINCOME==RINCOME&Question10Table$RACE==RACE,])/count(Question10Table[Question10Table$RACE==RACE,]),x=RACE)) + geom_bar(stat="identity")
+tmp
+ggplot(tmp,aes(fill = Var1, y=Freq*100,x=Var2)) + geom_bar(stat="identity")
+boxplot(Question10Table$RINCOME ~ Question10Table$RACE, main="Boxplot of Income against Race")
